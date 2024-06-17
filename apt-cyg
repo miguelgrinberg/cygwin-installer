@@ -1,5 +1,5 @@
 #!/bin/bash
-# apt-cyg: install tool for Cygwin similar to debian apt-get
+# apt-cyg: install tool for Cygwin similar to Debian apt/-get
 #
 # The MIT License (MIT)
 #
@@ -23,118 +23,175 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-if [ ${BASH_VERSINFO}${BASH_VERSINFO[1]} -lt 42 ]
-then
-  echo 'Bash version 4.2+ required'
-  exit
-fi
-
 usage="\
 NAME
-  apt-cyg - package manager utility
-
+  apt-cyg - Cygwin package manager utility
 SYNOPSIS
-  apt-cyg [operation] [options] [targets]
-
+  apt-cyg [-?|-h|--h[elp]|-V|-v|--v[ersion]]
+	  {l[ist[a[ll]]] [-i|--i[nstalled]|-u|--u[pgradable]|pkg...] |
+	  {s[how] | l[ist]f[iles] |
+	  i[nstall] [-n|--nod[eps]] [-p|--nop[ick]] [-s|--nos[cripts]] |
+	  so[urce] [-b|--b[uild]|-c|--c[ompile]|-d|--d[ownload[-only]] |
+	  do[wnload] | re[move] | de[pends] | rd[epends]} pkg... |
+	  se[arch[a[ll]]] file... | cat[egor[y|ies]] [cat...] |
+	  u[pdate] | m[irror] [URL] | cac[he] [directory]}
 DESCRIPTION
-  apt-cyg is a package management utility that tracks installed packages on a
-  Cygwin system. Invoking apt-cyg involves specifying an operation with any
-  potential options and targets to operate on. A target is usually a package
-  name, file name, URL, or a search string. Targets can be provided as command
-  line arguments.
-
+  apt-cyg is a package management utility that tracks installed packages
+  on a Cygwin system.  Invoking apt-cyg involves specifying an operation
+  with any potential options and targets to operate on.  A target is
+  either a package name, file name, search string, URL, or directory.
+  Targets can be provided as command line arguments.
 OPERATIONS
-  install
-    Install package(s).
-
-  remove
+  l[ist[a[ll]]] [-i|--i[nstalled]|-u|--u[pgradable]|pkg...]
+    Display package names that match shell patterns. If listall is used, or
+    no packages are found by list, searches the master package list (in
+    setup.ini). Option --installed displays all installed packages; option
+    --upgradable displays all outdated packages.
+  s[how] pkg...
+    Display information on given package name(s).
+  l[ist]f[iles] pkg...
+    List all files owned by a given package. Multiple packages can be
+    specified on the command line.
+  i[nstall] [-n|--nod[eps]] [-p|--nop[ick]] [-s|--nos[cripts]] pkg...
+    Install package(s) and any dependencies, unless -n|--nod[eps] is specified,
+    which skips all dependency checks, and does not download or install
+    packages on which specified packages are dependent; -p|--nop[ick] is an
+    internal option for install of a package dependency; -s|--nos[cripts] skips
+    running any preremove or postinstall scripts immediately, and is used
+    internally to defer running scripts until all requested packages and
+    dependencies have been installed, or are ready to be removed.
+  so[urce] [-b|--b[uild]|-c|--c[ompile]|-d|--d[ownload[-only]] pkg...
+    Retrieve package source(s) from the server into a package directory
+    created under the current directory, and unpack under the package
+    directory, unless -d|--d[ownload[-only]] is specified.
+    If -b|--b[uild]|-c|--c[ompile] is specified, and cygport specs are in the
+    package, install any build dependencies, plus cygport and any of its
+    build dependencies, and build package using cygport; otherwise try to 
+    configure, then try to make; if cygport specs are not part of the package,
+    build dependencies may be missing, and need to be installed manually.
+  do[wnload] pkg...
+    Retrieve package(s) from the server, but do not install/upgrade
+    anything.
+  re[move] pkg...
     Remove package(s) from the system.
-
-  update
-    Download a fresh copy of the master package list (setup.ini) from the
-    server defined in setup.rc.
-
-  download
-    Retrieve package(s) from the server, but do not install/upgrade anything.
-
-  show
-    Display information on given package(s).
-
-  depends
-    Produce a dependency tree for a package.
-
-  rdepends
+  de[pends] pkg...
+    Produce a tree of all dependencies for a package.
+  rd[epends] pkg...
     Produce a tree of packages that depend on the named package.
-
-  list
-    Search each locally-installed package for names that match regexp. If no
-    package names are provided in the command line, all installed packages will
-    be queried.
-
-  listall
-    This will search each package in the master package list (setup.ini) for
-    names that match regexp.
-
-  category
-    Display all packages that are members of a named category.
-
-  listfiles
-    List all files owned by a given package. Multiple packages can be specified
-    on the command line.
-
-  search
-    Search for downloaded packages that own the specified file(s). The path can
+  se[arch][a[ll]] file...
+    Search for packages that own the specified file(s).  The path can
     be relative or absolute, and one or more files can be specified.
-
-  searchall
-    Search cygwin.com to retrieve file information about packages. The provided
-    target is considered to be a filename and searchall will return the
-    package(s) which contain this file.
-
-  source
-    Retrieve package source(s) from the server into package directory created
-    under current directory and unpack under package directory.
-  
-  mirror
-    Set the mirror; a full URL to a location where the database, packages, and
-    signatures for this repository can be found. If no URL is provided, display
-    current mirror.
-
-  cache
-    Set the package cache directory. If a file is not found in cache directory,
-    it will be downloaded. Unix and Windows forms are accepted, as well as
-    absolute or regular paths. If no directory is provided, display current
-    cache.
-
+    If searchall is used searches cygwin.com for packages that own the
+    specified file(s).
+  cat[egor[y|ies]] [cat...]
+    Display all packages that are members of a named category.  If no
+    category is provided in the command line, all categories used will
+    be listed.
+  u[pdate]
+    Download a fresh copy of the master package list (setup.ini) from
+    the mirror, and display outdated packages.
+  m[irror] [URL]
+    Set the mirror: a full URL to a location where the database,
+    packages, and signatures for this repository can be found.  If no
+    URL is provided, display the current mirror.
+  cac[he] [directory]
+    Set the package cache directory.  Unix and Windows forms are
+    accepted, as well as absolute or regular paths.  If no directory is
+    provided, display current cache.  If a package to install is not
+    found in the cache directory, it will be downloaded.
 OPTIONS
-  --nodeps
-    Specify this option to skip all dependency checks.
-
-  --download-only
-    Do not unpack source package.
-  --compile
-    With source, install any build dependencies, and build package.
-
-  --version
+  -b|--b[uild]|-c|--c[ompile]
+    With source: install any build dependencies; if cygport is part of
+    the package, include cygport and any of its build dependencies, and
+    build package using cygport; otherwise try to configure, then try
+    to make; if cygport is not part of the package, build dependencies
+    may be missing, and need to be installed manually.
+  -d|--d[ownload[-only]]
+    With source: just download and do not unpack source package.
+  -i|--i[nstalled]
+    With list: display only installed packages.
+  -n|--nod[eps]
+    Specify this option to skip all dependency checks, and not download
+    or install packages on which specified packages are dependent.
+  -p|--nop[ick]
+    Internal option for install of a package dependency.
+  -s|--nos[cripts]
+    Specify this option to skip running any preremove or postinstall
+    scripts.  Used internally during install to defer running
+    postinstall scripts until all requested packages and dependencies
+    have been installed.
+  -u|--u[pgradable]
+    With list: display only outdated packages.
+  -?|-h|--h[elp]
+    Display usage and exit.
+  -V|-v|--v[ersion]
     Display version and exit.
+DIAGNOSTICS
+  apt-cyg returns zero on normal operation, non-zero on error.
+AUTHORS
+  Stephen Jungels - original code @ https://github.com/transcode-open/apt-cyg
+  Ernie Rasta - arch, xz support
+  Leszek Cimala - docs
+  Stephen Lang - fixes, docs
+  Ryan Duryea - mirror, setup.ini download fixes
+  Steven Penny - fixes, add commands, options, functions
+  Loïc Corbasson - licence
+  Brian Inglis - postinstall fixes, source, man page, authors, upgradable
 "
 
 version="\
-apt-cyg version 1
-
+apt-cyg version 1.0
 The MIT License (MIT)
-
-Copyright (c) 2005-9 Stephen Jungels
+Copyright (c) 2005-13 Stephen Jungels
 "
 
+function msg {
+  printf '%s: %s\n' "$prog" "$*"
+}
+
+function warn {
+  printf '\e[1;31m%s: %s\e[m\n' "$prog" "$*" >&2
+}
+
 function wget {
-  if command wget -h &>/dev/null
+  case $fb in
+    wget)
+      if [ $# -eq 1 ]
+      then
+	$wget -nv -N -t 1 -T 1 "$@"	# non-verbose, 1 try, 1s timeout
+      else
+	$wget -nv -t 1 -T 1 -O "$1" "$2"
+      fi
+    ;;
+    curl)
+      if [ $# -eq 1 ]
+      then
+	$wget -LsS -O "$@"	# make curl less verbose
+      else
+	$wget -LsS -o "$1" "$2"
+      fi
+    ;;
+    lynx)
+      if [ $# -eq 1 ]
+      then
+	$wget -source "$1" > "${1##*/}"
+      else
+	$wget -source "$2" > "$1"
+      fi
+      set "${*: -1}"
+    ;;
+  esac
+
+  rc=$?
+
+  if [ $rc -ne 0 ]
   then
-    command wget "$@"
-  else
-    warn wget is not installed, using lynx as fallback
-    set "${*: -1}"
-    lynx -source "$1" > "${1##*/}"
+    if [ $# -eq 1 ]
+    then
+      warn "wget: rc $rc: $1"
+    else
+      warn "wget: rc $rc: $2 to $1"
+    fi
   fi
 }
 
@@ -142,36 +199,22 @@ function find-workspace {
   # default working directory and mirror
   
   # work wherever setup worked last, if possible
-  cache=$(gawk '
-  BEGIN {
-    RS = "\n\\<"
-    FS = "\n\t"
-  }
-  $1 == "last-cache" {
-    print $2
-  }
-  ' /etc/setup/setup.rc)
+  cache=$(/bin/sed '0,/^last-cache$/d;s/^\s\+//;q' $setup_rc)
+  cachedir=$(cygpath "$cache")
 
   if [[ "$(uname -m)" == "x86_64" ]]
   then
-  mirror=$(gawk '
-  /last-mirror/ {
-    getline
-    print $1
-  }
-  ' /etc/setup/setup.rc)
+    mirror=$(sed '0,/^last-mirror$/d;s/^\s\+//;q' /etc/setup/setup.rc)
+  mirrordir=${mirror//\//%2f}
+  mirrordir=${mirrordir//:/%3a}
   else
-    mirror=http://ftp.gwdg.de/pub/linux/sources.redhat.com/cygwin-archive/20221123
+    mirror=http://ftp.gwdg.de/pub/linux/sources.redhat.com/cygwin-archive/20221123/
+	mirrordir=/var/cache/apt/
   fi
 
-mirrordir=$(sed '
-  s / %2f g
-  s : %3a g
-  ' <<< "$mirror")
-
-  mkdir -p "$cache/$mirrordir/$arch"
-  cd "$cache/$mirrordir/$arch"
-  if [ -e setup.ini ]
+  /bin/mkdir -p "$cachedir/$mirrordir/$arch"
+  cd "$cachedir/$mirrordir/$arch"
+  if [ -e $setup_ini ]
   then
     return 0
   else
@@ -180,181 +223,529 @@ mirrordir=$(sed '
   fi
 }
 
+ 
+  if [[ "$(uname -m)" == "x86_64" ]]
+  then
 function get-setup {
-  touch setup.ini
-  mv setup.ini setup.ini-save
-  wget -N $mirror/$arch/setup.bz2
-  if [ -e setup.bz2 ]
+  gpg=''
+  for g in gnupg2 gpg2 gnupg gpg
+  do
+    [ -x /usr/bin/$g ] && gpg=/usr/bin/$g && break
+  done
+  if [ -z "$gpg" ]; then
+    warn "/usr/bin/g[nu]pg[2]: not found, need to install gnupg2 or gnupg"
+    exit 2
+  fi
+  [ -e setup ] && /bin/mv setup setup.save
+  [ ! -e $setup_ini ] && touch $setup_ini
+  /bin/mv $setup_ini $setup_ini-save
+  wget https://cygwin.com/key/$pubring_asc
+  if [ ! -r $pubring_asc ] || [ ! -s $pubring_asc ]; then
+    warn "$pubring_asc: not found, cannot verify setup signatures"
+    exit 2
+  fi
+  gpgopts="--batch --no-secmem-warning --keyring ./$pubring_asc --verify --"
+# hash=/usr/bin/sha512sum
+# sum=sha512.sum
+  wget $mirror$arch/$sum
+  if [ ! -r $sum ] || [ ! -s $sum ]; then
+    warn "$sum: not found, cannot check setup hashes"
+#   exit 2
+  fi
+  wget $mirror$arch/$setup_ini.sig
+  if [ ! -r $setup_ini.sig ] || [ ! -s $setup_ini.sig ]; then
+    warn "$setup_ini.sig: not found, cannot verify $setup_ini signature"
+    exit 2
+  fi
+  for decomp in unxz unzstd bunzip2 lzip gunzip; do
+    case $decomp in
+      unxz)	dsuf=xz;;
+      unzstd)	dsuf=zst;;
+      bunzip2)	dsuf=bz2;;
+      lzip)	dsuf=lz;;
+      gunzip)	dsuf=gz;;
+    esac
+    if [ ! -e setup ] && [ -x /usr/bin/$decomp ]; then
+      wget $mirror$arch/setup.$dsuf.sig
+      wget $mirror$arch/setup.$dsuf
+      if [ -r setup.$dsuf.sig ] && [ -s setup.$dsuf.sig ] && \
+	  [ -r setup.$dsuf ] && [ -s setup.$dsuf ]; then
+	msg "gpg: setup.$dsuf: verifying sig setup.$dsuf.sig, key $pubring_asc..."
+	if ! $gpg $gpgopts setup.$dsuf.sig setup.$dsuf; then
+	  warn "gpg: setup.$dsuf: verify rc $?, sig setup.$dsuf.sig, key $pubring_asc"
+	else
+	  if ! /usr/bin/$decomp -dfk -- setup.$dsuf; then
+	    warn "$decomp: setup.$dsuf: decompress failed, rc $?"
+	  fi
+	fi
+      fi
+    fi
+  done
+  if [ -e setup ]; then
+    /bin/mv -f setup $setup_ini
+  else
+    wget $mirror$arch/$setup_ini
+  fi
+  if [ ! -r $setup_ini ] || [ ! -s $setup_ini ]; then
+    warn "$setup_ini: not found; cannot update, reverting"
+    /bin/mv -f -- $setup_ini-save $setup_ini
+    return 2
+  fi
+  msg "gpg: $setup_ini: verifying sig $setup_ini.sig, key $pubring_asc..."
+  if ! $gpg $gpgopts $setup_ini.sig $setup_ini; then
+    gpgrc=$?
+    warn "gpg: $setup_ini: verify rc $?, sig $setup_ini.sig, key $pubring_asc"
+    exit $gpgrc
+  fi
+  if [ -s $sum ]; then
+    msg "sha512sum: $sum: checking hashes..."
+    if ! $hash -cw --ignore-missing -- $sum; then
+      warn "$sum: hash does not match, download corrupted?"
+#     exit 1
+    fi
+  fi
+  msg "$setup_ini: up to date"
+}
+else
+function get-setup {
+  [ -e setup ] && /bin/mv setup setup.save
+  [ ! -e $setup_ini ] && touch $setup_ini
+  /bin/mv $setup_ini $setup_ini-save
+  if [ ! -e setup ] && [ -x /usr/bin/unxz ]
+  then
+    wget $mirror$arch/setup.xz
+    if [ -f setup.xz ]
+    then
+      /usr/bin/unxz setup.xz
+    fi
+  fi
+  if [ ! -e setup.bz2 ] && [ -x /usr/bin/bunzip2 ]
+  then
+    wget $mirror$arch/setup.bz2
+    if [ -e setup.bz2 ]
+    then
+      /usr/bin/bunzip2 setup.bz2
+    fi
+  fi
+  if [ -e setup ]
+  then
+    /bin/mv setup $setup_ini
+  else
+    wget $mirror$arch/$setup_ini
+  fi
+  if [ -e setup.ini ]
   then
     bunzip2 setup.bz2
-    mv setup setup.ini
+    mv setup $setup_ini
     echo Updated setup.ini
   else
-    echo Error updating setup.ini, reverting
-    mv setup.ini-save setup.ini
+    warn Error updating setup.ini, reverting
+    /bin/mv $setup_ini-save $setup_ini
+    return 1
   fi
 }
+fi
 
 function check-packages {
   if [[ $pks ]]
   then
     return 0
   else
-    echo No packages found.
-    return 1
+    warn "No packages found."
+    return 2
   fi
-}
-
-function warn {
-  printf '\e[1;31m%s\e[m\n' "$*" >&2
 }
 
 function apt-update {
   if find-workspace
   then
     get-setup
+    upgradable
   fi
 }
 
-function apt-category {
-  check-packages
+function show-categories {
   find-workspace
+  msg "Categories:"
+  /bin/sed '/^category:\s*/!d;s///;s/\s\+/\n/g' $setup_ini | sort -fu | pr -5T
+}
+
+function apt-category {
+  check-packages || show-categories
+  find-workspace
+
   for pkg in "${pks[@]}"
   do
-    gawk '
+    /usr/bin/awk '
+    query ~ /^[a-z]/ {
+      query = toupper( substr( query, 1, 1)) substr( query, 2)
+    }
     $1 == "@" {
       pck = $2
     }
     $1 == "category:" && $0 ~ query {
       print pck
     }
-    ' query="$pks" setup.ini
+    ' query="$pkg" $setup_ini
   done
 }
 
-function apt-list {
-  local sbq
-  for pkg in "${pks[@]}"
-  do
-    let sbq++ && echo
-    gawk 'NR>1 && $1~pkg && $0=$1' pkg="$pkg" /etc/setup/installed.db
-  done
-  let sbq && return
-  gawk 'NR>1 && $0=$1' /etc/setup/installed.db
+function upgradable {
+  find-workspace
+  /usr/bin/gawk '
+    # installed.db
+    FNR == NR && FNR == 1 { RS = "\n+"; FS = "[ \t]+" }
+    # installed.db fields: pkg tar-bz2 pick/manual
+    FNR == NR && NF == 3 {
+      ++pkg_inst;
+      inst[$1]	= $1;
+      inst[$1,"file"] = $2;
+      inst[$1,"pick"] = $3;
+###   print inst[$1], inst[$1,"file"], inst[$1,"pick"]	> "/dev/stderr";	###
+    }
+    # setup.ini
+    FNR < NR && FNR == 1 { RS = "\n\n@ "; FS = "\n"; }
+    FNR < NR && FNR > 1 { ++pkg_avail; }
+    # setup for installed packages
+    FNR < NR && ($1 in inst) {
+      ++pkg_check;
+      i = "";
+      for (l = 2; l <= NF; ++l) {
+	if ($l ~ /^requires:\s/)  { r = substr( $l, 11); }
+	if ($l ~ /^version:\s/)   { v = substr( $l, 10); }
+        if ($l ~ /^install:\s/)	  { i = substr( $l, 10); }
+	if ($l ~ /^depends2:\s/)  {
+	  r = substr( $l, 11);
+	  r = gensub( /,/, "", "g", r);
+	}
+	if ($l ~ /^\[prev]$/)     { break; }
+      }
+      # install: arch-tar-?z size sha512sum
+      if (i) {
+	f = i;
+	sub( /\s.*$/, "", f);		# strip trailing fields
+	gsub( /.*\//, "", f);		# strip leading path
+	sub( /\.[glx]z/, ".bz2", f);	# change ?z to bz2
+	sub( /\.zst/, ".bz2", f);	# change zst to bz2
+	# fields: tar-bz2 pick ver arch-tar-?z size sha512sum depends...
+	pkg[$1] = sprintf( "%s %d %s %s %s", f, inst[$1,"pick"], v, i, r);
+	# upgrade if installed file does not match setup file
+	if (inst[$1,"file"] != f) {
+###	  print inst[$1], inst[$1,"file"], f, v, inst[$1,"pick"]	> "/dev/stderr";	###
+	  upgrade[$1] = $1;
+	  nf = split( r, p, " ");
+	  # upgrade required packages possibly
+	  for (f = 1; f <= nf; ++f) {
+	      r = p[f];
+	      upgrade[r] = r;
+	  }
+	}
+      }
+    }
+
+    function check_requires( r	,p ,nf ,f) {
+      nf = split( pkg[r], p, " ");
+      for (f = 7; f <= nf; ++f) {
+	r = p[f];
+	if (!(r in upgrade)) {
+	  upgrade[r] = r;
+	  check_requires( r );
+	}
+      }
+    }
+
+    END {
+      # reset default RS, FS
+      RS = "\n";
+      FS = "[ \t]+";
+      # add dependencies
+      for (u in upgrade) { check_requires( u ); }
+      for (u in upgrade) {
+	if (inst[u,"file"] != substr( pkg[u], 1, index( pkg[u], " ") - 1)) {
+	  ++pkg_upg;
+	}
+      }
+      printf("packages available %d, installed %d, checked %d, upgradable %d\n",
+		pkg_avail, pkg_inst, pkg_check, pkg_upg) > "/dev/stderr";
+      for (u in upgrade) {
+      # fields: tar-bz2 pick ver arch-tar-?z size sha512sum requires...
+	nf = split( pkg[u], p, " ");
+	if (inst[u,"file"] != p[1]) {
+###	  print inst[u], inst[u,"file"], p[1], p[3], inst[u,"pick"]	> "/dev/stderr";	###
+	  arch = substr( p[4], 1, index( p[4], "/") - 1);
+	  l1 = length( u ) + 2;
+	  l2 = length( inst[u,"file"] ) - l1 - length( ".tar.bz2" ) + 1;
+	  pkgs[u] = sprintf( "%s %s %s [upgradable from: %s, %s]",
+			u, p[3], arch, substr( inst[u,"file"], l1, l2),
+			(inst[u,"pick"] ? "manual" : "automatic"));
+	  size += p[5];
+	}
+      }
+      if (0 < size) {
+	nu = asort( pkgs );
+	for (u = 1; u <= nu; ++u) { print pkgs[u]; }
+	for (u = 1; 9999 < size; ++u) { size /= 1024; }
+	printf( "Need to get %d%sB of archives.\n",
+	      int( size ), substr( " KMGTP", u, 1)) > "/dev/stderr";
+      }
+    }
+    ' arch="$arch" $installed_db $setup_ini
 }
 
 function apt-listall {
   check-packages
   find-workspace
+
+  # convert globs to regex pattern
+  pc=$(/bin/sed 's/\./\\./g;s/?/./g;s/\*/.*/g;s/\s/|/g' <<< "${pks[@]}")
+  /usr/bin/awk '
+    $1 ~ query {
+      v = arch = "";
+
+      for (f = 2; f <= NF && $f !~ /^\[/; ++f) {
+	if ($f ~ /^version:\s/) {
+	  v = substr( $f, 10);
+	}
+
+	if ($f ~ /^install:\s/) {
+	  arch = substr( $f, 10, index( $f, "/") - 10);
+	}
+      }
+
+      print $1, v, arch;
+    }
+
+    END {
+      exit !fd;			# success if found else failure
+    }
+    ' RS='\n\n@ ' FS='\n' query="$pc" $setup_ini
+}
+
+function apt-list {
   local sbq
-  for pkg in "${pks[@]}"
-  do
-    let sbq++ && echo
-    gawk '$1~pkg && $0=$1' RS='\n\n@ ' FS='\n' pkg="$pkg" setup.ini
-  done
+  sbq=1
+
+  [ -v upgradable ] && upgradable && return		# upgradable if option
+
+  [ -v installed ] && [ -z "$pks" ] && pks=("?")	# installed if option
+
+  # convert globs to regex pattern
+  pc=$(/bin/sed 's/\./\\./g;s/?/./g;s/\*/.*/g;s/\s/|/g' <<< "${pks[@]}")
+  /usr/bin/awk '
+    $1 ~ query && NF == 3 {
+      l1 = length( $1 );
+      l2 = length( $2 );
+      v = substr( $2, l1 + 2, l2 - l1 - length( ".tar.bz2" ) - 1);
+      print $1, v, arch, "[installed, " ($3 ? "manual" : "automatic") "]";
+      ++fd;
+    }
+
+    END {
+      exit !fd;			# success if found else failure
+    }
+  ' arch="$arch" query="$pc" $installed_db && sbq=$?
+
+# default to no packages not all packages like apt
+  [ $sbq -eq 0 ] || apt-listall		# if none installed check all packages
 }
 
 function apt-listfiles {
   check-packages
   find-workspace
   local pkg sbq
+
   for pkg in "${pks[@]}"
   do
-    (( sbq++ )) && echo
-    if [ ! -e /etc/setup/"$pkg".lst.gz ]
+    let sbq++ && echo
+
+    if [ -r $etc_setup/"$pkg".lst.gz ]
     then
+      /bin/zcat -- $etc_setup/"$pkg".lst.gz
+    else
       download "$pkg"
+      read dn bn < /tmp/dwn
+      /bin/tar -t -f "$cachedir/$mirrordir/$dn/$bn" --
     fi
-    gzip -cd /etc/setup/"$pkg".lst.gz
+
   done
 }
 
 function apt-show {
-  find-workspace
   check-packages
+  find-workspace
+
   for pkg in "${pks[@]}"
   do
     (( notfirst++ )) && echo
-    gawk '
-    $1 == query {
-      print
-      fd++
-    }
-    END {
-      if (! fd)
-        print "Unable to locate package " query
-    }
-    ' RS='\n\n@ ' FS='\n' query="$pkg" setup.ini
+    /usr/bin/awk '
+      $1 == query {
+	print $0
+	fd++
+      }
+
+      END {
+	if (!fd)
+	  print "Cannot find package " query
+
+	exit !fd
+      }
+      ' RS='\n\n@ ' FS='\n' query="$pkg" $setup_ini
   done
 }
 
 function apt-depends {
-  find-workspace
   check-packages
+  find-workspace
+
   for pkg in "${pks[@]}"
   do
-    gawk '
-    @include "join"
-    $1 == "@" {
-      apg = $2
-    }
-    $1 == "requires:" {
-      for (z=2; z<=NF; z++)
-        reqs[apg][z-1] = $z
-    }
-    END {
-      prpg(ENVIRON["pkg"])
-    }
-    function smartmatch(small, large,    values) {
-      for (each in large)
-        values[large[each]]
-      return small in values
-    }
-    function prpg(fpg) {
-      if (smartmatch(fpg, spath)) return
-      spath[length(spath)+1] = fpg
-      print join(spath, 1, length(spath), " > ")
-      if (isarray(reqs[fpg]))
-        for (each in reqs[fpg])
-          prpg(reqs[fpg][each])
-      delete spath[length(spath)]
-    }
-    ' setup.ini
+    /usr/bin/awk '
+      @include "join"
+      $1 == "@" {
+	apg = $2
+      }
+      $1 == "requires:" {
+	for (z = 2; z <= NF; ++z)
+	  reqs[apg][z-1] = $z
+      }
+      $1 == "depends2:" {
+	for (z = 2; z <= NF; ++z)
+	  reqs[apg][z-1] = gensub( /,/, "", "g", $z)
+	for (z; z <= length(reqs[apg]); ++z)
+	  reqs[apg][z] = ""	# clear trailing requires
+      }
+      END {
+	prpg(ENVIRON["pkg"])
+      }
+      function smartmatch(small, large,    values) {
+	for (each in large)
+	  values[large[each]]
+	return small in values
+      }
+      function prpg(fpg) {
+	if (smartmatch(fpg, spath)) return
+	spath[length(spath)+1] = fpg
+	print join(spath, 1, length(spath), " > ")
+	if (isarray(reqs[fpg]))
+	  for (each in reqs[fpg])
+	    prpg(reqs[fpg][each])
+	delete spath[length(spath)]
+      }
+      ' $setup_ini
   done
 }
 
 function apt-rdepends {
   find-workspace
+
   for pkg in "${pks[@]}"
   do
-    gawk '
-    @include "join"
-    $1 == "@" {
-      apg = $2
-    }
-    $1 == "requires:" {
-      for (z=2; z<=NF; z++)
-        reqs[$z][length(reqs[$z])+1] = apg
-    }
-    END {
-      prpg(ENVIRON["pkg"])
-    }
-    function smartmatch(small, large,    values) {
-      for (each in large)
-        values[large[each]]
-      return small in values
-    }
-    function prpg(fpg) {
-      if (smartmatch(fpg, spath)) return
-      spath[length(spath)+1] = fpg
-      print join(spath, 1, length(spath), " < ")
-      if (isarray(reqs[fpg]))
-        for (each in reqs[fpg])
-          prpg(reqs[fpg][each])
-      delete spath[length(spath)]
-    }
-    ' setup.ini
+    /usr/bin/awk '
+      @include "join"
+      function add(d, apg,	r, nz, z) {
+	if (d && apg) {
+	  nz = split( d, r, " ")
+	  for (z = 1; z <= nz; ++z) {
+	    reqs[r[z]][length(reqs[r[z]])+1] = apg
+	  }
+	}
+        return
+      }
+      function smartmatch(small, large,    values) {
+	for (each in large)
+	  values[large[each]]
+	return small in values
+      }
+      function prpg(fpg) {
+	if (smartmatch(fpg, spath)) return
+	spath[length(spath)+1] = fpg
+	print join(spath, 1, length(spath), " < ")
+	if (isarray(reqs[fpg]))
+	  for (each in reqs[fpg])
+	    prpg(reqs[fpg][each])
+	delete spath[length(spath)]
+      }
+      $1 == "@" {
+	add(d, apg)
+	apg = $2
+      }
+      $1 == "requires:" { d = substr( $0, 11) }
+      $1 == "depends2:" {
+	d = substr( $0, 11)
+	d = gensub( /,/, "", "g", d)
+      }
+      END {
+	add(d, apg)
+	prpg(ENVIRON["pkg"])
+      }
+      ' $setup_ini
   done
+}
+
+function download {
+  local pkg digest digactual
+  pkg="$1"
+  # look for package and save desc file
+
+  /usr/bin/awk '$1 == pc' RS='\n\n@ ' FS='\n' pc="$pkg" $setup_ini > desc
+  if [ ! -s desc ]
+  then
+    warn "$pkg: not found"
+    return 1
+  fi
+
+  # download the compressed file
+
+  # pick the latest version, which comes first
+  set -- $(/usr/bin/awk '$1 == "install:"' desc)
+  if (( ! $# ))
+  then
+    warn "$pkg: 'install' not found in package description; obsolete package?"
+    return 1
+  fi
+
+  dn=${2%/*}
+  bn=${2##*/}
+
+  # check the hash
+  digest=$4
+# case ${#digest} in
+#  32) hash=/usr/bin/md5sum; sum=md5.sum;;
+# 128) hash=/usr/bin/sha512sum; sum=sha512.sum;;
+# esac
+
+  /bin/mkdir -p "$cachedir/$mirrordir/$dn"
+  cd "$cachedir/$mirrordir/$dn"
+
+  if ! test -s $bn || ! $hash -c <<< "$digest $bn"
+  then
+    msg "$pkg: downloading..."
+    wget $mirror$dn/$sum
+    if [ ! -f $sum ]; then
+      warn "$pkg: $sum: download failed"
+      return 2
+    fi
+    wget $mirror$dn/$bn
+    if [ ! -f $bn ]; then
+      warn "$pkg: $bn: download failed"
+      return 2
+    fi
+    msg "$pkg: $sum: checking hashes..."
+    if ! $hash -cw --ignore-missing -- $sum; then
+      warn "$pkg: $sum: hash does not match, download corrupted?"
+      exit 1
+    fi
+    if ! $hash -c <<< "$digest $bn"; then
+      warn "$pkg: hash does not match, download corrupted?"
+      return 1
+    fi
+  fi
+
+# unsafe to lst here - required for remove
+# /bin/tar -t -f $bn -- | gzip > $etc_setup/"$pkg".lst.gz
+  cd ~-
+  /bin/mv -f -- desc  "$cachedir/$mirrordir/$dn/"
+  echo $dn $bn > /tmp/dwn
 }
 
 function apt-download {
@@ -368,322 +759,283 @@ function apt-download {
   done
 }
 
-function download {
-  local pkg digest digactual
-  pkg=$1
-  # look for package and save desc file
-
-  gawk '$1 == pc' RS='\n\n@ ' FS='\n' pc=$pkg setup.ini > desc
-  if [ ! -s desc ]
-  then
-    echo Unable to locate package $pkg
-    exit 1
-  fi
-
-  # download and unpack the bz2 or xz file
-
-  # pick the latest version, which comes first
-  set -- $(gawk '$1 == "install:"' desc)
-  if (( ! $# ))
-  then
-    echo 'Could not find "install" in package description: obsolete package?'
-    exit 1
-  fi
-
-  dn=$(dirname $2)
-  bn=$(basename $2)
-
-if [[ "$(uname -m)" == "x86_64" ]]
-  then
-  # check the md5
-  digest=$4
-  case ${#digest} in
-   32) hash=md5sum    ;;
-  128) hash=sha512sum ;;
-  esac
-  mkdir -p "$cache/$mirrordir/$dn"
-  cd "$cache/$mirrordir/$dn"
-  if ! test -e $bn || ! $hash -c <<< "$digest $bn"
-  then
-    wget -O $bn $mirror/$dn/$bn
-    $hash -c <<< "$digest $bn" || exit
-  fi
-else
-  mkdir -p "$cache/$mirrordir/$dn"
-  cd "$cache/$mirrordir/$dn"
-  wget -O $bn $mirror/$dn/$bn
-fi
-
-  tar tf $bn | gzip > /etc/setup/"$pkg".lst.gz
-  cd ~-
-  mv desc "$cache/$mirrordir/$dn"
-  echo $dn $bn > /tmp/dwn
-}
-
 function apt-search {
   check-packages
-  echo Searching downloaded packages...
+  msg "Searching downloaded packages..."
+
   for pkg in "${pks[@]}"
   do
-    key=$(type -P "$pkg" | sed s./..)
+    key=$(type -P "$pkg" | /bin/sed 's./..')
     [[ $key ]] || key=$pkg
-    for manifest in /etc/setup/*.lst.gz
-    do
-      if gzip -cd $manifest | grep -q "$key"
-      then
-        package=$(sed '
-        s,/etc/setup/,,
-        s,.lst.gz,,
-        ' <<< $manifest)
-        echo $package
-      fi
-    done
+    keys+=("$key")
   done
+
+  pc=$(/bin/sed 's/\./\\./g;s/?/./g;s/\*/.*/g;s/\s/|/g' <<< "${keys[@]}")
+  /bin/zegrep -le "$pc" -- $etc_setup/*.lst.gz | \
+  /bin/sed "s|^$etc_setup/||;s|\\.lst\\.gz$||"
 }
 
 function apt-searchall {
-  cd /tmp
+  local matches=/tmp/matches.$$
+  local search='https://cygwin.com/cgi-bin2/package-grep.cgi'
   for pkg in "${pks[@]}"
   do
-    printf -v qs 'text=1&arch=%s&grep=%s' $arch "$pkg"
-    wget -O matches cygwin.com/cgi-bin2/package-grep.cgi?"$qs"
-    gawk '
-    NR == 1 {next}
-    mc[$1]++ {next}
-    /-debuginfo-/ {next}
-    /^cygwin32-/ {next}
+    wget $matches "$search?text=1&arch=$arch&grep=$pkg"
+    /usr/bin/awk '
+    NR == 1 || mc[$1]++ || /-debuginfo-/ || /^cygwin32-/ {next}
     {print $1}
-    ' FS=-[[:digit:]] matches
+    ' FS='-[[:digit:]]' $matches
   done
 }
 
 function apt-install {
   check-packages
   find-workspace
-  local pkg dn bn requires wr package sbq script
+  local pkg dn bn bz pick requires wr package sbq script
+
   for pkg in "${pks[@]}"
   do
-
     # indent package loop code
-    if grep -q "^$pkg " /etc/setup/installed.db
+    if /bin/grep -qe "^$pkg\s" -- $installed_db
     then
-      echo Package $pkg is already installed, skipping
+      msg "$pkg: package already installed, skipping"
       continue
     fi
     (( sbq++ )) && echo
-    echo Installing $pkg
+    msg "$pkg: installing"
 
     download $pkg
-    read dn bn </tmp/dwn
-    echo Unpacking...
+    read dn bn < /tmp/dwn
+    msg "$pkg: unpacking..."
 
-    cd "$cache/$mirrordir/$dn"
-    tar -x -C / -f $bn
+    cd "$cachedir/$mirrordir/$dn"
+    /bin/tar -x -C / -f $bn --
+    # safe to lst here - required for remove
+    /bin/tar -t -f $bn -- | gzip > $etc_setup/"$pkg".lst.gz
     # update the package database
-
-    awk '
+    bz=${bn/.[glx]z/.bz2}
+    bz=${bz/.zst/.bz2}
+    [ -v nopick ] && pick=0 || pick=1
+    # ensure standard collating sequence regardless of locale settings
+    LC_ALL=C /usr/bin/awk '
     ins != 1 && pkg < $1 {
-      print pkg, bz, 0
+      print pkg, bz, pick
       ins = 1
     }
     1
     END {
-      if (ins != 1) print pkg, bz, 0
+      if (ins != 1) print pkg, bz, pick
     }
-    ' pkg="$pkg" bz=$bn /etc/setup/installed.db > /tmp/awk.$$
-    mv /etc/setup/installed.db /etc/setup/installed.db-save
-    mv /tmp/awk.$$ /etc/setup/installed.db
+    ' pkg="$pkg" bz=$bz pick=$pick $installed_db > $installed_db.$$
+    /bin/mv -f $installed_db $installed_db-save
+    /bin/mv -f $installed_db.$$ $installed_db
+    [ ! -v ins ] && ins=0
+    (( ins++ ))
 
+    # skip dependencies
     [ -v nodeps ] && continue
-    # recursively install required packages
 
-    requires=$(awk '$1=="requires", $0=$2' FS=': ' desc)
+    # recursively install required packages
+    requires=$(/usr/bin/awk '
+		$1=="requires",$0=$2
+		$1=="depends2",$0=gensub(/,/,"","g",$2)
+		' FS=': ' desc)
     cd ~-
     wr=0
+
     if [[ $requires ]]
     then
-      echo Package $pkg requires the following packages, installing:
-      echo $requires
+      msg "$pkg: requires the following packages, installing..."
+      msg "$requires"
+
       for package in $requires
       do
-	if grep -q "^$package " /etc/setup/installed.db
+	if /bin/grep -qe "^$package\s" -- $installed_db
 	then
-	  echo Package $package is already installed, skipping
+	  msg "$package: package already installed, skipping..."
 	  continue
 	fi
-	apt-cyg install --noscripts $package || (( wr++ ))
+
+	$0 install --noscripts --nopick $package || (( wr++ ))
       done
     fi
+
     if (( wr ))
     then
-      echo some required packages did not install, continuing
-fi
+      warn "Some required packages were not installed, continuing..."
+    fi
 
-echo Package $pkg installed
+    msg "$pkg: installation complete"
 
-done
+  done
 
   # run all postinstall scripts after all packages installed
-  if [ ! -v noscripts ]; then
-    find /etc/postinstall -name '*.*sh' | while read script # allow dash scripts
+  if [ ! -v noscripts ] && [ -v ins ] && [ $ins -gt 0 ]; then
+    # set CYGWINFORALL to -A for use as cygpath argument in scripts if elevated
+    if /usr/bin/id -G | /bin/egrep -qw '114|544|405504'; then
+      export CYGWINFORALL=-A
+    fi
+    msg "postinstall scripts: running..."
+    # allow dash scripts
+    find $etc_postinstall -name '*.*sh' | \
+    while read script
     do
-      echo Running $script
+      msg "$script: running..."
       $script
-      # don't rename permanent first and last to run postinstall scripts
-      [[ $script != /etc/postinstall/[0z]p_*.*sh ]] && mv $script $script.done
+      # don't rename permanent postinstall scripts
+      [[ $script != $etc_postinstall/[0-9a-z][pqrt][-_]*.*sh ]] && \
+      /bin/mv -f -- $script $script.done
     done
   fi
 }
 
 function apt-remove {
   check-packages
-  cd /etc
-  cygcheck gawk bash bunzip2 grep gzip mv sed tar xz > setup/essential.lst
+  cd ${SYSCONFDIR:-/etc}/
+  /bin/cygcheck awk bash bunzip2 gzip mv rm rmdir sed tar unxz | \
+  /bin/sed '/^Found:\s/d;/^\s*->\s*/d;/cygwin.*bin/!d;s/^.*\\//' | \
+  /usr/bin/sort -u -o $essential
+
   for pkg in "${pks[@]}"
   do
-
-  if ! grep -q "^$pkg " setup/installed.db
-  then
-    echo Package $pkg is not installed, skipping
-    continue
-  fi
-
-  if [ ! -e setup/"$pkg".lst.gz ]
-  then
-    warn Package manifest missing, cannot remove $pkg. Exiting
-    exit 1
-  fi
-  gzip -dk setup/"$pkg".lst.gz
-  gawk '
-  NR == FNR {
-    if ($NF) ess[$NF]
-    next
-  }
-  $NF in ess {
-    exit 1
-  }
-  ' FS='[/\\\\]' setup/{essential,$pkg}.lst
-  esn=$?
-  if [ $esn = 0 ]
-  then
-    echo Removing $pkg
-    if [ -e preremove/"$pkg".sh ]
+    if ! /bin/grep -qe "^$pkg\s" -- $installed_db
     then
-      preremove/"$pkg".sh
-      rm preremove/"$pkg".sh
+      warn "$pkg: not installed; cannot remove, skipping"
+      continue
     fi
-    mapfile dt < setup/"$pkg".lst
+
+    if [ ! -e $etc_setup/$pkg.lst.gz ]
+    then
+      warn "$pkg: no manifest found; cannot remove, skipping"
+      continue
+    fi
+
+    /bin/gzip -dk -- $etc_setup/$pkg.lst.gz
+
+    /usr/bin/awk '
+    NR == FNR {
+      if ($NF) ess[$NF]
+      next
+    }
+    $NF in ess {
+      exit 1
+    }
+    ' FS='[/\\\\]' $essential $etc_setup/$pkg.lst
+
+    if [ $? -ne 0 ]
+    then
+      warn "$pkg: used by $prog; cannot remove, skipping"
+      /bin/rm -f -- $etc_setup/$pkg.lst
+      continue
+    fi
+
+    msg "$pkg: removing..."
+
+    if [ -x $etc_preremove/$pkg.sh ]
+    then
+    # set CYGWINFORALL to -A for use as cygpath argument in scripts if elevated
+      if /usr/bin/id -G | /bin/egrep -qw '114|544|405504'; then
+	export CYGWINFORALL=-A
+      fi
+      msg "$pkg: $etc_preremove/$pkg.sh: running..."
+      $etc_preremove/$pkg.sh
+    fi
+
+    mapfile dt < $etc_setup/$pkg.lst
+    d=()
+    f=()
+
     for each in ${dt[*]}
     do
-      [ -f /$each ] && rm /$each
+      if [ -n "$each" ]; then
+	if [ -f /$each ]; then
+	  f+=(/$each)
+	elif [ -d /$each/ ]; then
+	  d+=(/$each/)
+	fi
+      fi
     done
-    for each in ${dt[*]}
-    do
-      [ -d /$each ] && rmdir --i /$each
-    done
-    rm -f setup/"$pkg".lst.gz postinstall/"$pkg".sh.done
-    gawk -i inplace '$1 != ENVIRON["pkg"]' setup/installed.db
-    echo Package $pkg removed
-  fi
-  rm setup/"$pkg".lst
-  if [ $esn = 1 ]
-  then
-    warn apt-cyg cannot remove package $pkg, exiting
-    exit 1
-  fi
 
-  done
-}
+    msg "$pkg: removing files..."
+    test -z $f || \
+	  /bin/rm -f -- ${f[*]}
+    msg "$pkg: removing directories..."
+    test -z $d || \
+      /bin/rmdir --ignore-fail-on-non-empty -- ${d[*]}
 
-function apt-source {
-  check-packages
-  find-workspace
-  local pkg sbq
-  for pkg in "${pks[@]}"
-  do
-    (( sbq++ )) && echo
-    cyg-source "$pkg"
+    /bin/rm -f -- $etc_setup/$pkg.lst
+    /bin/sed -i -e '/^'"$pkg"'\s/d' -- $installed_db
+    msg "$pkg: removed"
   done
 }
 
 function cyg-source {
-  local pkg digest hash dn bn
+  local pkg digest dn bn
   pkg=$1
   # look for package and save desc file
 
-  awk '$1 == pc' RS='\n\n@ ' FS='\n' pc=$pkg setup.ini > desc
+  /usr/bin/awk '$1 == query' RS='\n\n@ ' FS='\n' query="$pkg" $setup_ini > desc
   if [ ! -s desc ]
   then
-    echo Unable to locate package $pkg
-    exit 1
+    warn "$pkg: package description not found; obsolete package?"
+    return 1
   fi
 
-  # download and unpack the bz2 or xz file
+  # download and unpack the compressed file
 
   # pick the latest version, which comes first
-  set -- $(awk '$1 == "source:"' desc)
+  set -- $(/usr/bin/awk '$1 == "source:"' desc)
   if (( ! $# ))
   then
-    echo 'Could not find "source" in package description: obsolete package?'
-    exit 1
+    warn "$pkg: 'source' not found in package description; obsolete package?"
+    return 1
   fi
 
   dn=${2%/*}
   bn=${2##*/}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if [[ "$(uname -m)" == "x86_64" ]]
-  then
-  # check the md5
+  # check the hash
   digest=$4
-  case ${#digest} in
-   32) hash=md5sum    ;;
-  128) hash=sha512sum ;;
-  esac
+# case ${#digest} in
+#  32) hash=/usr/bin/md5sum; sum=md5.sum;;
+# 128) hash=/usr/bin/sha512sum; sum=sha512.sum;;
+# esac
 
   pushd ~-	# back to user directory
 
   # don't create sub-directory if not unpacking
   if [ ! -v nounpack ]; then
-    mkdir -p $pkg
+    /bin/mkdir -p $pkg
     cd $pkg
   fi
 
   # download package source and check hash
   if ! test -e $bn || ! $hash -c <<< "$digest $bn"
   then
-    wget -O $bn $mirror/$dn/$bn
-    $hash -c <<< "$digest $bn" || exit
+    wget $mirror$dn/$sum
+    if [ ! -f $sum ]; then
+      warn "$pkg: $sum: download failed"
+      return 2
+    fi
+    wget $bn $mirror$dn/$bn
+    if [ ! -f $bn ]; then
+      warn "$pkg: download failed"
+      return 2
+    fi
+    msg "$pkg: $sum: checking hashes..."
+    if ! $hash -cw --ignore-missing -- $sum; then
+      warn "$pkg: $sum: hash does not match, download corrupted?"
+      exit 1
+    fi
+    if ! $hash -c <<< "$digest $bn"; then
+      warn "$pkg: hash does not match, download corrupted?"
+      return 1
+    fi
   fi
-else
-
-  pushd ~-	# back to user directory
-
-  # don't create sub-directory if not unpacking
-  if [ ! -v nounpack ]; then
-    mkdir -p $pkg
-    cd $pkg
-  fi
-    wget -O $bn $mirror/$dn/$bn
-fi
 
   if [ ! -v nounpack ]; then
-    echo Unpacking $pkg/$bn ...
-    tar -x -f $bn
+    msg "$pkg: $pkg/$bn; unpacking ..."
+    /bin/tar -x -f $bn --
 
     # can't build unless you unpack
     if [ -v build ]; then
@@ -693,29 +1045,29 @@ fi
 	cd $spdn/
 
 	if [ -r $pkg*.cygport ]; then
-	  requires=$(sed '/^[^#]*DEPEND=/!d;s//cygport /;s/['\'\"']//g' $pkg*.cygport)
+	  requires=$(. $pkg*.cygport; echo cygport ${DEPEND:-${DEPENDS:-$BUILD_REQUIRES}})
 	  requires=${requires:-cygport}
-	  echo Building $pkg requires the following packages, installing:
-	  echo $requires
-	  apt-cyg install $requires
+	  msg "$pkg: building requires the following packages, installing..."
+	  msg "$requires"
+	  $0 install --nopick $requires
 	  cygport $pkg*.cygport all
 	elif [ -r configure ]; then
 	  [ -x configure ] || chmod +x configure
 
-	  [ -x configure ]  && ./configure
+	  [ -x configure ] && ./configure
 
 	  if [ -r Makefile ] || [ -r makefile ] || [ -r MAKEFILE ]; then
-	    make
+	    /usr/bin/make
 	  else
-	    echo Don\'t know how to build without Makefile
+	    warn "$pkg: Makefile: not found; cannot build"
 	  fi
 	elif [ -r Makefile ] || [ -r makefile ] || [ -r MAKEFILE ]; then
-	    make
+	    /usr/bin/make
 	else
-	  echo Don\'t know how to build without $pkg.cygport or configure or Makefile
+	  warn "$pkg: Makefile, configure, .cygport: not found; cannot build"
 	fi
       else
-	echo Build can\'t find directory $pkg/$spdn/
+	warn "$pkg: $pkg/$spdn/: directory not found"
       fi # source dir
     fi # -v build
   fi # ! -v nounpack
@@ -723,114 +1075,272 @@ fi
   popd
 }
 
+function apt-source {
+  check-packages
+  find-workspace
+  local pkg sbq
+
+  for pkg in "${pks[@]}"
+  do
+    (( sbq++ )) && echo
+    cyg-source "$pkg"
+  done
+}
+
 function apt-mirror {
+
+  if [[ "$(uname -m)" == "x86_64" ]]
+  then
   if [ "$pks" ]
   then
-    gawk -i inplace '
-    1
-    /last-mirror/ {
-      getline
-      print "\t" pks
-    }
-    ' pks="$pks" /etc/setup/setup.rc
-    echo Mirror set to "$pks".
+    /bin/sed -i '/^last-mirror$/{n;s|^.*$|\t'"$pks"'|}' $setup_rc
+    msg "$pks: mirror set."
+    mirror="$pks"
   else
-    gawk '
-    /last-mirror/ {
-      getline
-      print $1
-    }
-    ' /etc/setup/setup.rc
+    mirror=$(/bin/sed '0,/^last-mirror$/d;s/^\s\+//;q' $setup_rc)
   fi
+  else
+    mirror=http://ftp.gwdg.de/pub/linux/sources.redhat.com/cygwin-archive/20221123
+  fi
+  mirrordir=${mirror//\//%2f}
+  mirrordir=${mirrordir//:/%3a}
+  echo $mirror
 }
 
 function apt-cache {
   if [ "$pks" ]
   then
-    vas=$(cygpath -aw "$pks")
-    gawk -i inplace '
-    1
-    /last-cache/ {
-      getline
-      print "\t" vas
-    }
-    ' vas="${vas//\\/\\\\}" /etc/setup/setup.rc
-    echo Cache set to "$vas".
+    cachedir=$(cygpath -aU "$pks")
+    cache=$(cygpath -aml "$pks")
+    /bin/sed -i '/^last-cache$/{n;s|^.*$|\t'"${cache//\\/\\\\}"'|}' $setup_rc
+    msg "$cachedir: cache set."
   else
-    gawk '
-    /last-cache/ {
-      getline
-      print $1
-    }
-    ' /etc/setup/setup.rc
+    cache=$(/bin/sed '0,/^last-cache$/d;s/^\s\+//;q' $setup_rc)
+    cachedir=$(cygpath -aU "$cache")
+    echo $cachedir
   fi
 }
+
+
+# main code #
+
+prog=${0##*/}
+base=${prog%.*}
+
+if [ ${BASH_VERSINFO:-0}${BASH_VERSINFO[1]} -lt 42 ]
+then
+  warn "bash: version $BASH_VERSINFO.${BASH_VERSINFO[1]}, version 4.2+ required"
+  exit 3
+fi
 
 if [ -p /dev/stdin ]
 then
   mapfile -t pks
 fi
 
-# process options
-until [ $# = 0 ]
+# select available download program
+for w in /usr/bin/wget /usr/bin/curl /usr/bin/lynx
+do
+  if [ -x $w ]
+  then
+    wget=$w
+    fb=${wget##*/}
+
+    if [ "$fb" != "wget" ]
+    then
+      warn "wget: not found; fallback to $fb"
+    fi
+
+    break
+  fi
+done
+
+if [ -z "$wget" ]
+then
+  warn "wget, curl, lynx: none found; cannot download"
+  exit 2
+fi
+
+# process args
+until [ $# -eq 0 ]
 do
   case "$1" in
 
-    --nodeps)
-      nodeps=1
-      shift
-    ;;
-
-    --noscripts)
-      noscripts=1
-      shift
-    ;;
-
-    --version)
-      printf "$version"
-      exit
-    ;;
-
-    --build | --compile)
+    -b | --b | --bu | --bui | --buil | --build | \
+    -c | --c | --co | --com | --comp | --compi | --compil | --compile)
       build=1
       shift
     ;;
 
-    --download | --download-only)
+    -d | --d | --do | --dow | --down | --downl | --downlo | --downloa | \
+    --download | --download-o | --download-on | --download-onl | \
+    --download-only)
       nounpack=1
       shift
     ;;
 
-    update)
-      command=$1
+    -\? | -h | --h | --he | --hel | --help)
+      printf "$usage"
+      exit
+    ;;
+
+    -i | --i | --in | --ins | --inst | --insta | --instal | --install | \
+    --installe | --installed)
+      installed=1
       shift
     ;;
 
-    list | cache  | remove | depends | listall  | download | listfiles |\
-    show | mirror | search | install | category | rdepends | searchall | source)
-      if [[ $command ]]
-      then
-        pks+=("$1")
-      else
-        command=$1
-      fi
+    -n | --nod | --node | --nodep | --nodeps)
+      nodeps=1
+      shift
+    ;;
+
+    -p | --nop | --nopi | --nopic | --nopick)
+      nopick=1
+      shift
+    ;;
+
+    -s | --nos | --nosc | --noscr | --noscri | --noscrip | \
+    --noscript | --noscripts)
+      noscripts=1
+      shift
+    ;;
+
+    -u | --u | --up | --upg | --upgr | --upgra | --upgrad | --upgrada | \
+    --upgradab | --upgradabl | --upgradable)
+      upgradable=1
+      shift
+    ;;
+
+    -V | -v | --v | --ve | --ver | --vers | --versi | --versio | --version)
+      printf "$version"
+      exit
+    ;;
+
+# end of options
+    --)
+      shift
+    ;;
+
+    cac | cach | cache)
+      command=cache
+      shift
+    ;;
+
+    cat | cate | categ | catego | categor | category | \
+    categori | categorie | categories)
+      command=category
+      shift
+    ;;
+
+    de | dep | depe | depen | depend | depends)
+      command=depends
+      shift
+    ;;
+
+    do | dow | down | downl | downlo | downloa | download)
+      command=download
+      shift
+    ;;
+
+    i | in | ins | inst | insta | instal | install)
+      command=install
+      shift
+    ;;
+
+    l | li | lis | list)
+      command=list
+      shift
+    ;;
+
+    la | lal | lall | lista | listal | listall)
+      command=listall
+      shift
+    ;;
+
+    lf | lfi | lfil | lfile | lfiles | \
+    listf | listfi | listfil | listfile | listfiles)
+      command=listfiles
+      shift
+    ;;
+
+    m | mi | mir | mirr | mirro | mirror)
+      command=mirror
+      shift
+    ;;
+
+    rd | rde | rdep | rdepe | rdepen | rdepend | rdepends)
+      command=rdepends
+      shift
+    ;;
+
+    re | rem | remo | remov | remove)
+      command=remove
+      shift
+    ;;
+
+    se | sea | sear | searc | search)
+      command=search
+      shift
+    ;;
+
+    sa | sal | sall | searcha | searchal | searchall)
+      command=searchall
+      shift
+    ;;
+
+    s | sh | sho | show)
+      command=show
+      shift
+    ;;
+
+    so | sou | sour | sourc | source)
+      command=source
+      shift
+    ;;
+
+    upd | upda | updat | update)
+      command=update
       shift
     ;;
 
     *)
-      pks+=("$1")
+      if [ "$command" ]
+      then
+        pks+=("$1")
+      else
+	if type -t apt-$1 | /bin/grep -qe function --
+	then
+	  command=$1
+	else
+	  printf "$usage"
+	  exit 1
+	fi
+      fi
       shift
     ;;
-
   esac
 done
 
 set -a
+readonly hash=/usr/bin/sha512sum
+readonly sum=sha512.sum
+readonly setup_ini=setup.ini
+readonly pubring_asc=pubring.asc
+readonly arch=${HOSTTYPE/i[3-7]/x}
+readonly etc_preremove=${SYSCONFDIR:-/etc}/preremove
+readonly etc_postinstall=${SYSCONFDIR:-/etc}/postinstall
+readonly etc_setup=${SYSCONFDIR:-/etc}/setup
+readonly setup_rc=$etc_setup/setup.rc
+readonly installed_db=$etc_setup/installed.db
+readonly essential=$etc_setup/essential.lst
 
-if type -t apt-$command | grep -q function
+if type -t apt-$command | /bin/grep -qe function --
 then
-  readonly arch=${HOSTTYPE/i6/x}
   apt-$command
 else
   printf "$usage"
+  exit 1
 fi
+
+# vi:sts=2 sw=2:
