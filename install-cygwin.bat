@@ -54,6 +54,31 @@ echo adoStream.SaveToFile target                                        >> %DLOA
 echo adoStream.Close                                                    >> %DLOAD_SCRIPT%
 echo.                                                                   >> %DLOAD_SCRIPT%
 
+
+
+if %PROCESSOR_ARCHITECTURE%==x86 (
+  rem 32 bit
+  rem Install base cygwin
+  cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86.exe setup-x86.exe
+  setup-x86.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+
+rem Install apt-cyg package manager
+%CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
+%CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
+) else (
+  rem 64 bit
+rem Install base cygwin
+cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86_64.exe setup-x86_64.exe
+setup-x86_64.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+
+rem Install apt-cyg package manager
+%CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
+%CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
+)
+
+
+
+
 rem Install base cygwin
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
 setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
