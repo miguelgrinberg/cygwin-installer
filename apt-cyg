@@ -143,13 +143,19 @@ function find-workspace {
   }
   ' /etc/setup/setup.rc)
 
+  if [[ "$(uname -m)" == "x86_64" ]]
+  then
   mirror=$(awk '
   /last-mirror/ {
     getline
     print $1
   }
   ' /etc/setup/setup.rc)
-  mirrordir=$(sed '
+  else
+    mirror=http://ftp.gwdg.de/pub/linux/sources.redhat.com/cygwin-archive/20221123
+  fi
+
+mirrordir=$(sed '
   s / %2f g
   s : %3a g
   ' <<< "$mirror")
@@ -378,6 +384,8 @@ function download {
   dn=$(dirname $2)
   bn=$(basename $2)
 
+if [[ "$(uname -m)" == "x86_64" ]]
+  then
   # check the md5
   digest=$4
   case ${#digest} in
@@ -391,6 +399,11 @@ function download {
     wget -O $bn $mirror/$dn/$bn
     $hash -c <<< "$digest $bn" || exit
   fi
+else
+  mkdir -p "$cache/$mirrordir/$dn"
+  cd "$cache/$mirrordir/$dn"
+  wget -O $bn $mirror/$dn/$bn
+fi
 
   tar tf $bn | gzip > /etc/setup/"$pkg".lst.gz
   cd ~-
