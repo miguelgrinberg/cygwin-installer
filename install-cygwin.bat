@@ -69,7 +69,7 @@ rem Install apt-cyg package manager
   rem 64 bit
 rem Install base cygwin
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86_64.exe setup-x86_64.exe
-setup-x86_64.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --arch x86_64 --no-write-registry --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
+setup-x86_64.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --arch x86_64 --no-write-registry --site https://mirrors.kernel.org/sourceware/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
 
 rem Install apt-cyg package manager
 %CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
