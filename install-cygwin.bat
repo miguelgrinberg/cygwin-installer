@@ -54,41 +54,32 @@ echo adoStream.SaveToFile target                                        >> %DLOA
 echo adoStream.Close                                                    >> %DLOAD_SCRIPT%
 echo.                                                                   >> %DLOAD_SCRIPT%
 
-
-
+if %CPU%==x86 (
+  rem 32 bit
+  rem Install base cygwin
+  cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86.exe setup-x86.exe
+  setup-x86.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --allow-unsupported-windows --arch x86 --force-current --no-desktop --no-replaceonreboot --no-verify --no-version-check --no-warn-deprecated-windows --no-write-registry --only-site --site https://mirrors.kernel.org/sourceware/cygwin-archive/20221123/ -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,wget
+) else (
 if %PROCESSOR_ARCHITECTURE%==x86 (
   rem 32 bit
   rem Install base cygwin
   cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86.exe setup-x86.exe
-  setup-x86.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --allow-unsupported-windows --arch x86 --force-current --no-desktop --no-replaceonreboot --no-verify --no-version-check --no-warn-deprecated-windows --no-write-registry --only-site --site https://mirrors.kernel.org/sourceware/cygwin-archive/20221123/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
-
-rem Install apt-cyg package manager
-%CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://github.com/andykimpe/cygwin-installer/raw/master/apt-cyg
-%CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
+  setup-x86.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --allow-unsupported-windows --arch x86 --force-current --no-desktop --no-replaceonreboot --no-verify --no-version-check --no-warn-deprecated-windows --no-write-registry --only-site --site https://mirrors.kernel.org/sourceware/cygwin-archive/20221123/ -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,wget
 ) else (
   rem 64 bit
 rem Install base cygwin
 cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-x86_64.exe setup-x86_64.exe
-setup-x86_64.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --arch x86_64 --no-write-registry --site https://mirrors.kernel.org/sourceware/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
-
-rem Install apt-cyg package manager
-%CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
-%CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
+setup-x86_64.exe --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --no-startmenu --arch x86_64 --no-write-registry --site https://mirrors.kernel.org/sourceware/cygwin/ -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,wget
+)
 )
 
-
-
-
-rem Install base cygwin
-cscript /nologo %DLOAD_SCRIPT% https://cygwin.com/setup-%CPU%.exe setup-%CPU%.exe
-setup-%CPU% --no-admin --root %CYGWIN_BASE% --quiet-mode --no-shortcuts --site ftp://mirror.switch.ch/mirror/cygwin/ --categories Base -l %CYGWIN_BASE%\var\cache\apt\packages --packages dos2unix,ncurses,wget,gcc-g++,make,vim,git
-
 rem Install apt-cyg package manager
-%CYGWIN_BASE%\bin\wget -O /bin/apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
-%CYGWIN_BASE%\bin\chmod +x /bin/apt-cyg
+%CYGWIN_BASE%\bin\wget.exe -O %CYGWIN_BASE%\bin\apt-cyg https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
+%CYGWIN_BASE%\bin\chmod.exe +x %CYGWIN_BASE%\bin\apt-cyg
+%CYGWIN_BASE%\bin\dos2unix.exe %CYGWIN_BASE%\bin\apt-cyg
 
 rem Create home directory
-"%CYGWIN_BASE%\bin\bash" --login -c echo "Creating home directory..."
+"%CYGWIN_BASE%\bin\bash.exe" --login -c echo "Creating home directory..."
 
 rem Create desktop shortcut
 set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
