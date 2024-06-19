@@ -93,12 +93,14 @@ rem Create home directory
 rem Create desktop shortcut
 set SHORTCUT_SCRIPT=%TEMP%\shortcut-%RANDOM%-%RANDOM%-%RANDOM%-%RANDOM%.vbs
 echo Set oWS = WScript.CreateObject("WScript.Shell")                    >  "%SHORTCUT_SCRIPT%"
-echo sLinkFile = "%USERPROFILE%\Desktop\Cygwin.lnk"                     >> "%SHORTCUT_SCRIPT%"
+echo sLinkFile = "%USERPROFILE%\Desktop\Cygwin Terminal.lnk"                     >> "%SHORTCUT_SCRIPT%"
 echo Set oLink = oWS.CreateShortcut(sLinkFile)                          >> "%SHORTCUT_SCRIPT%"
 echo oLink.TargetPath = "%CYGWIN_BASE%\bin\mintty.exe"                  >> "%SHORTCUT_SCRIPT%"
-echo oLink.Arguments = "-"                                              >> "%SHORTCUT_SCRIPT%"
+echo oLink.Arguments = "-i /Cygwin-Terminal.ico -"                      >> "%SHORTCUT_SCRIPT%"
+echo oLink.IconLocation = "%CYGWIN_BASE%\Cygwin-Terminal.ico,0"         >> "%SHORTCUT_SCRIPT%"
 echo oLink.Save                                                         >> "%SHORTCUT_SCRIPT%"
 cscript /nologo "%SHORTCUT_SCRIPT%"
+del "%SHORTCUT_SCRIPT%"
 
 rem Cleanup
 del "%DLOAD_SCRIPT%"
